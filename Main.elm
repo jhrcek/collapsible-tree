@@ -1,16 +1,18 @@
 module Main exposing (..)
 
 import Html exposing (..)
-import Html.App
 import Html.Attributes
 import Html.Events
 import List
 import Set
+import Tree exposing (..)
+import Result exposing (toMaybe)
+import Json.Decode as JD
 
 
-main : Program Never
+main : Program Never Model Msg
 main =
-    Html.App.beginnerProgram
+    Html.beginnerProgram
         { model = initialModel
         , view = view
         , update = update
@@ -28,32 +30,24 @@ type Msg
     | Collapse String
 
 
-type Tree a
-    = N a (List (Tree a))
-
-
 initialModel : Model
 initialModel =
     { tree =
-        N "Object"
-            [ N "Animals"
-                [ N "Birds" []
-                , N "Mamals"
-                    [ N "Elephant" []
-                    , N "Mouse" []
-                    ]
-                , N "Reptiles" []
-                ]
-            , N "Plants"
-                [ N "Flowers"
-                    [ N "Rose" []
-                    , N "Tulip" []
-                    ]
-                ]
-            , N "Trees" []
-            ]
+        process <|
+            JD.decodeString Tree.treeDecoder <|
+                "[\"one\",[[\"two\",[]],[\"three\",[]]]]"
     , expanded = Set.empty
     }
+
+
+process : Result String (Tree String) -> Tree String
+process r =
+    case r of
+        Ok t ->
+            t
+
+        Err e ->
+            Debug.log ("Error parsing the tree: " ++ e) N "dummy" []
 
 
 addCounts : Tree a -> Tree ( a, Int )
@@ -93,11 +87,11 @@ update msg model =
 view : Model -> Html Msg
 view { tree, expanded } =
     let
-        t' =
+        trWithCounts =
             addCounts tree
     in
         Html.div []
-            [ Html.ul [ Html.Attributes.class "tree" ] [ viewTree expanded t' ]
+            [ Html.ul [ Html.Attributes.class "tree" ] [ viewTree expanded trWithCounts ]
             , Html.hr [] []
             , Html.div [] [ Html.text <| toString expanded ]
             ]
