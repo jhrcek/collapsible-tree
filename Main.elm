@@ -6,8 +6,6 @@ import Html.Events
 import List
 import Set
 import Tree exposing (..)
-import Result exposing (toMaybe)
-import Json.Decode as JD
 
 
 main : Program Never Model Msg
@@ -33,33 +31,36 @@ type Msg
 initialModel : Model
 initialModel =
     { tree =
-        process <|
-            JD.decodeString Tree.treeDecoder <|
-                "[\"one\",[[\"two\",[]],[\"three\",[]]]]"
+        Node "Mathematics"
+            [ Node "Foundations"
+                [ Node "Mathematical logic" []
+                ]
+            , Node "Discrete"
+                [ Node "Combinatorics" []
+                , Node "Graph Theory" []
+                , Node "Algebra"
+                    [ Node "Group theory" []
+                    ]
+                ]
+            , Node "Continuous"
+                [ Node "Calculus" []
+                ]
+            , Node "Applied mathematics" []
+            ]
     , expanded = Set.empty
     }
 
 
-process : Result String (Tree String) -> Tree String
-process r =
-    case r of
-        Ok t ->
-            t
-
-        Err e ->
-            Debug.log ("Error parsing the tree: " ++ e) N "dummy" []
-
-
 addCounts : Tree a -> Tree ( a, Int )
-addCounts (N a subtrees) =
+addCounts (Node a subtrees) =
     case subtrees of
         [] ->
-            N ( a, 0 ) []
+            Node ( a, 0 ) []
 
         ts ->
             let
                 getOffspringCount : Tree ( a, Int ) -> Int
-                getOffspringCount (N ( _, cnt ) _) =
+                getOffspringCount (Node ( _, cnt ) _) =
                     cnt
 
                 subtreesWithCount =
@@ -71,7 +72,7 @@ addCounts (N a subtrees) =
                     List.map (\t -> getOffspringCount t + 1) subtreesWithCount
                         |> List.sum
             in
-                N ( a, offspringCount ) subtreesWithCount
+                Node ( a, offspringCount ) subtreesWithCount
 
 
 update : Msg -> Model -> Model
@@ -93,15 +94,23 @@ view { tree, expanded } =
         Html.div []
             [ Html.ul [ Html.Attributes.class "tree" ] [ viewTree expanded trWithCounts ]
             , Html.hr [] []
-            , Html.div [] [ Html.text <| toString expanded ]
+            , viewExpanded expanded
             ]
 
 
+viewExpanded : Set.Set String -> Html Msg
+viewExpanded expanded =
+    Html.div [] [ Html.text <| "Expanded nodes: " ++ toString (Set.toList expanded) ]
+
+
 viewTree : Set.Set String -> Tree ( String, Int ) -> Html Msg
-viewTree expanded (N ( root, offspringCount ) children) =
+viewTree expanded (Node ( root, offspringCount ) children) =
     let
         renderSubtree =
             Set.member root expanded
+
+        rootView =
+            Html.span [ expandOrCollapse ] [ Html.text rootText ]
 
         expandOrCollapse =
             Html.Events.onClick <|
@@ -110,29 +119,29 @@ viewTree expanded (N ( root, offspringCount ) children) =
                 else
                     Expand root
 
-        plusOrMinus =
-            if offspringCount <= 0 then
-                ""
-            else if renderSubtree then
-                "[-] "
-            else
-                "[+] "
-
-        label =
+        rootText =
             plusOrMinus
                 ++ root
                 ++ if offspringCount > 0 then
                     " (" ++ toString offspringCount ++ ")"
                    else
                     ""
+
+        childrenListView =
+            if renderSubtree then
+                viewForest expanded children
+            else
+                []
+
+        plusOrMinus =
+            if offspringCount <= 0 then
+                ""
+            else if renderSubtree then
+                "⊟ "
+            else
+                "⊞ "
     in
-        Html.li []
-            ((Html.span [ expandOrCollapse ] [ Html.text label ])
-                :: if renderSubtree then
-                    viewForest expanded children
-                   else
-                    []
-            )
+        Html.li [] (rootView :: childrenListView)
 
 
 viewForest : Set.Set String -> List (Tree ( String, Int )) -> List (Html Msg)

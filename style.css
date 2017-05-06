@@ -1,6 +1,6 @@
 ul.tree, ul.tree ul {
     list-style-type: none;
-    background: url(vline.png) repeat-y;
+    background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAKCAYAAAB10jRKAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAFElEQVQImWNgYGD4z8TAwMBALAEAL8YBElOJWb4AAAAASUVORK5CYII=') repeat-y;
     margin: 0px;
     padding: 0px;
 }
@@ -13,9 +13,9 @@ ul.tree li {
     margin: 0;
     padding: 0 12px;
     line-height: 20px;
-    background: url(node.png) no-repeat;
+    background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAUCAYAAACwG3xrAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAI0lEQVQokWNgYGD4z4AHMOGTHEEKGBkIBBQDIQWDwRdDQgEAZ58DIdD/aoYAAAAASUVORK5CYII=') no-repeat;
 }
 
 ul.tree li:last-child {
-    background: #fff url(lastnode.png) no-repeat;
+    background: #fff url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAUCAYAAACwG3xrAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAHklEQVQokWNgYGD4z4AHMOGTHEEKGBkIBNQooBYAABc8AhDliZUzAAAAAElFTkSuQmCC') no-repeat;
 }
