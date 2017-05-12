@@ -11,7 +11,7 @@ main : Program Never Model Msg
 main =
     Html.beginnerProgram
         { model = initialModel
-        , view = view
+        , view = viewTree
         , update = update
         }
 
@@ -56,11 +56,6 @@ update msg model =
             toggleNode nodeId False model
 
 
-view : Model -> Html Msg
-view tree =
-    Html.ul [ noBullets ] [ viewTree tree ]
-
-
 viewTree : CollapsibleTree String -> Html Msg
 viewTree (Node root children) =
     let
@@ -87,22 +82,19 @@ viewTree (Node root children) =
                 []
 
         plusOrMinus =
-            if List.length children <= 0 then
+            if List.isEmpty children then
                 ""
             else if expanded then
                 "▾ "
             else
                 "▸ "
     in
-        Html.li [] (rootView :: childrenListView)
+        Html.ul [ noBullets ] (rootView :: childrenListView)
 
 
 viewForest : List (CollapsibleTree String) -> List (Html Msg)
 viewForest children =
-    if List.isEmpty children then
-        []
-    else
-        [ Html.ul [ noBullets ] (List.map viewTree children) ]
+    List.map (\childTree -> Html.li [] [ viewTree childTree ]) children
 
 
 noBullets : Attribute Msg
